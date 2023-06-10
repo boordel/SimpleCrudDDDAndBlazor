@@ -1,42 +1,28 @@
-version: '3.9'
+version: '3.4'
+
 services:
+  mc2.crudtest.presentation.server:
+    image: ${DOCKER_REGISTRY-}mc2crudtestpresentationserver
+    build:
+      context: .
+      dockerfile: Mc2.CrudTest.Presentation/Server/Dockerfile
+
+  customer.api:
+    image: ${DOCKER_REGISTRY-}customerapi
+    build:
+      context: .
+      dockerfile: Customer/Customer.Api/Dockerfile
+    depends_on:
+      - sql_db
+
   sql_db:
     image: mcr.microsoft.com/mssql/server:2022-latest
     ports:
       - '1433:1433'
     environment:
       - ACCEPT_EULA='Y'
-      - SA_PASSWORD='P4yk3K00r0_h'
-    networks:
-      - customer-dev-net      
+      - SA_PASSWORD='P4yk3K00r0_h'    
     volumes:
       - D:/DockerVolume/mssql/data:/var/opt/mssql/data
       - D:/DockerVolume/mssql/log:/var/opt/mssql/log
       - D:/DockerVolume/mssql/secrets:/var/opt/mssql/secrets
-  customer-api:
-    build: 
-      context: ./
-      dockerfile: Customer/Customer.Api/Dockerfile
-    ports:
-      - "7003:80"
-    depends_on:
-      - sql_db  
-    networks:
-      - customer-dev-net
-    environment:
-      - ASPNETCORE_ENVIRONMENT=Development
-
-  customer-web:
-    build: 
-      context: ./
-      dockerfile: Mc2.CrudTest.Presentation/Server/Dockerfile
-    ports:
-      - "7009:80"
-    networks:
-      - customer-dev-net
-    environment:
-      - ASPNETCORE_ENVIRONMENT=Development
-
-networks:
-  customer-dev-net:
-    driver: bridge
