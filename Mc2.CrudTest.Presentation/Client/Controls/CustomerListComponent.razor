@@ -1,0 +1,75 @@
+﻿@inject ICustomerService _customerService
+@inject IJSRuntime _jsRuntime
+
+@if (customers == null)
+{
+    <h2>Loading customers...</h2>
+}
+else
+{
+    <div class="mb-3">
+        <a class="btn btn-primary" href="/add">Add Customer</a>
+    </div>
+
+    @if (customers.Count() == 0)
+    {
+        <h2>Customer list is empty. Please click on Add Customer button to add new one.</h2>
+    }
+    else
+    {
+        <table id="customer-list" class="table table-hover">
+            <thead>
+                <th scope ="col">Customer Name</th>
+                <th scope="col">Phone Number</th>
+                <th scope="col">Date Of Birth</th>
+                <th scope="col">Email</th>
+                <th scope="col">Bank Account</th>
+                <th scope="col"></th>
+            </thead>
+            <tbody>
+                @foreach(var customer in customers)
+                {
+                    <tr>
+                        <td>@customer.firstName @customer.lastName</td>
+                        <td>@customer.phoneNumber</td>
+                        <td>@customer.dateOfBirth</td>
+                        <td>@customer.email</td>
+                        <td>@customer.bankAccountNumber</td>
+                        <td>
+                            <a class="btn btn-info" href="/update/@customer.id"><i class="oi oi-pencil"></i></a>
+                            <a class="btn btn-danger" @onclick=@(() => DeleteCustomer(customer.id))><i class="oi oi-trash"></i></a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+}
+
+
+@code {
+    private IEnumerable<CustomerDto>? customers;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await GetCustomersList();
+    }
+
+    private async Task GetCustomersList()
+    {
+        customers = await _customerService.GetCustomers();
+    }
+
+    private async Task DeleteCustomer(int id)
+    {
+        bool confirmed = await _jsRuntime.InvokeAsync<bool>("confirm", "Are you sure you want to delete this customer?");
+
+        if (confirmed)
+        {
+            await _customerService.DeleteCustomer(id);
+
+            await GetCustomersList();
+            StateHasChanged();
+        }
+    }
+}

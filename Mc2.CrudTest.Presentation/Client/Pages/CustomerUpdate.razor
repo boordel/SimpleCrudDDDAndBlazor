@@ -1,0 +1,90 @@
+﻿@page "/update/{id:int}"
+@inject ICustomerService _customerService
+@inject NavigationManager _navigator
+
+<PageTitle>Update customer</PageTitle>
+
+<h3>Update Customer</h3>
+
+<EditForm Model="@customer" OnValidSubmit="@UpdateCustomer">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div class="form-group mt-2">
+        <label for="firstName">First Name:</label>
+        <InputText id="firstName" class="form-control" @bind-Value="@customer.FirstName" />
+    </div>
+
+    <div class="form-group mt-2">
+        <label for="lastName">Last Name:</label>
+        <InputText id="lastName" class="form-control" @bind-Value="@customer.LastName" />
+    </div>
+
+    <div class="form-group mt-2">
+        <label for="lastName">Date of Birth:</label>
+        <InputText id="lastName" class="form-control" @bind-Value="@customer.DateOfBirth" placeholder="mm/dd/yyyy" />
+    </div>
+
+    <div class="form-group mt-2">
+        <label for="lastName">Phone Number:</label>
+        <InputText id="lastName" class="form-control" @bind-Value="@customer.PhoneNumber" />
+    </div>
+
+    <div class="form-group mt-2">
+        <label for="lastName">Email:</label>
+        <InputText id="lastName" class="form-control" @bind-Value="@customer.Email" />
+    </div>
+
+    <div class="form-group mt-2">
+        <label for="lastName">Bank Account Number:</label>
+        <InputText id="lastName" class="form-control" @bind-Value="@customer.BankAccountNumber" />
+    </div>
+
+    <button type="submit" class="btn btn-primary mt-4">Submit</button>
+</EditForm>
+
+<div class="mt-3 text-end">
+    <a href="/">Back to cutomers</a>
+</div>
+
+@code {
+    private CustomerModel customer = new();
+
+    [Parameter]
+    public int id { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var data = await _customerService.GetCustomerById(id);
+        if (data != null)
+            customer = new()
+                {
+                    Id = data.id,
+                    FirstName = data.firstName,
+                    LastName = data.lastName,
+                    DateOfBirth = data.dateOfBirth,
+                    PhoneNumber = data.phoneNumber,
+                    Email = data.email,
+                    BankAccountNumber = data.bankAccountNumber
+                };
+        else
+            _navigator.NavigateTo("/");
+    }
+
+    private async Task UpdateCustomer()
+    {
+        var data = new CustomerDto()
+            {
+                id = customer.Id,
+                firstName = customer.FirstName,
+                lastName = customer.LastName,
+                dateOfBirth = customer.DateOfBirth,
+                phoneNumber = customer.PhoneNumber,
+                email = customer.Email,
+                bankAccountNumber = customer.BankAccountNumber
+            };
+        await _customerService.UpdateCustomer(data);
+
+        _navigator.NavigateTo("/");
+    }
+}
