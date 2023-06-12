@@ -27,15 +27,24 @@ public class CustomerController : ControllerBase
     [HttpGet]
     public async Task<ActionResult<IEnumerable<CustomerDto>>> Get()
     {
-        var result = await CreateClientHttp().GetAsync("api/Customer");
-        if (result.IsSuccessStatusCode)
+        var client = CreateClientHttp();
+        try
         {
-            using var contentStream = await result.Content.ReadAsStreamAsync();
-            var customerList = await JsonSerializer.DeserializeAsync<IEnumerable<CustomerDto>>(contentStream);
-            return Ok(customerList);
+            var result = await client.GetAsync("api/Customer");
+            if (result.IsSuccessStatusCode)
+            {
+                using var contentStream = await result.Content.ReadAsStreamAsync();
+                var customerList = await JsonSerializer.DeserializeAsync<IEnumerable<CustomerDto>>(contentStream);
+                return Ok(customerList);
+            }
+            else
+                return NotFound();
         }
-        else
+        catch(Exception ex)
+        {
+            Console.WriteLine($"Error: {ex.Message}");
             return NotFound();
+        }
     }
 
     [HttpGet("{id}")]

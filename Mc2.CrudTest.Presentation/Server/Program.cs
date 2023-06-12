@@ -8,10 +8,26 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
 
 // Add Customer domain service client
-builder.Services.AddHttpClient("CustomerService", httpClient =>
+if (builder.WebHost.GetSetting("environment") == "Development")
 {
-    httpClient.BaseAddress = new Uri(builder.Configuration.GetSection("Services")["CustomerUrl"]!);
-});
+    builder.Services.AddHttpClient("CustomerService", httpClient =>
+    {
+        httpClient.BaseAddress = new Uri(builder.Configuration.GetSection("Services")["CustomerUrl"]!);
+    }).ConfigurePrimaryHttpMessageHandler(() =>
+    {
+        return new HttpClientHandler()
+        {
+            ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => { return true; }
+        };
+    });
+}
+else
+{
+    builder.Services.AddHttpClient("CustomerService", httpClient =>
+    {
+        httpClient.BaseAddress = new Uri(builder.Configuration.GetSection("Services")["CustomerUrl"]!);
+    });
+}
 
 var app = builder.Build();
 
